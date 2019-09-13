@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project AVIC Desktop">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="${dir.buildfile}/.."/>
+    <property name="dir.jarfile" value="${dir.buildfile}/dist"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/AVIC-Desktop.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="org.carnmoney.AVIC.desktop.AtlonaControl"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${dir.buildfile}/resources"/>
+            <fileset dir="${dir.buildfile}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-codec-1.11.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/commons-logging-1.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/fluent-hc-4.5.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/httpclient-4.5.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/httpclient-cache-4.5.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/httpclient-osgi-4.5.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/httpclient-win-4.5.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/httpcore-4.4.11.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/httpmime-4.5.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jna-4.5.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.buildfile}/lib/jna-platform-4.5.2.jar"/>
+        </jar>
+    </target>
+</project>
