@@ -90,12 +90,14 @@ public class AvicDesktop implements MessageListener {
         
         //Schedule a job for the event-dispatching thread:
         //adding TrayIcon.
+        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();
                 if (! NetworkChecker.addressIsReachable(programSettings.getProperty("host"),5000)) {
                 	
                 }
+                
             }
         });
         
@@ -120,10 +122,10 @@ public class AvicDesktop implements MessageListener {
         MenuItem settingsItem = new MenuItem("Settings...");
         
         displayMenu = new Menu("Switch to...");
-        MenuItem hdmiItem = new MenuItem(programSettings.getProperty("input.labels.hdmi.1","HDMI 1 Source"));
+        MenuItem hdmiItem = new MenuItem(programSettings.getProperty("input.labels.hdmi1","HDMI 1 Source"));
         MenuItem displayPortItem = new MenuItem(programSettings.getProperty("input.labels.displayport","DisplayPort Source"));
         MenuItem usbcItem = new MenuItem(programSettings.getProperty("input.labels.usbc","USB-C Source"));
-        MenuItem dvdItem = new MenuItem(programSettings.getProperty("input.labels.hdmi.2","HDMI 2 Souce"));
+        MenuItem dvdItem = new MenuItem(programSettings.getProperty("input.labels.hdmi2","HDMI 2 Souce"));
         MenuItem wirelessItem = new MenuItem(programSettings.getProperty("input.labels.byod","Wireless Source"));
         MenuItem exitItem = new MenuItem("Exit");
         
@@ -199,74 +201,68 @@ public class AvicDesktop implements MessageListener {
                 System.out.println(item.getLabel());
                 SourceChangedMessage message = null;
                 
-                try {
-                	switch (item.getActionCommand()) {
-		                	case "SWITCH_HDMI1":
-		                		if (restController.switchToSource(AtlonaSW510Input.HDMI1)) {
-		                			resultMessage = "Switched to HDMI";
-		                			resultIcon = TrayIcon.MessageType.INFO;
-		                			message = new SourceChangedMessage(AtlonaSW510Input.HDMI1);
-		                		} else {
-		                			resultMessage = "Failed to switch to HDMI - is it connected?";
-		                			resultIcon = TrayIcon.MessageType.ERROR;
-		                		}
-		                		break;
-		                		
-		                	case "SWITCH_DISPLAYPORT":
-		                		if (restController.switchToSource(AtlonaSW510Input.DISPLAYPORT)) {
-		                			resultMessage = "Switched to DisplayPort";
-		                			resultIcon = TrayIcon.MessageType.INFO;
-		                			message = new SourceChangedMessage(AtlonaSW510Input.DISPLAYPORT);
-		                		} else {
-		                			resultMessage = "Failed to switch to DisplayPort - is it connected?"; 
-		                			resultIcon = TrayIcon.MessageType.ERROR;
-		                		}
-		                		break;
-		                		
-		                	case "SWITCH_USBC":
-		                		if (restController.switchToSource(AtlonaSW510Input.USBC)) {
-		                			resultMessage = "Switched to USB-C";
-		                			resultIcon = TrayIcon.MessageType.INFO;
-		                			message = new SourceChangedMessage(AtlonaSW510Input.USBC);
-		                		} else {
-		                			resultMessage =  "Failed to switch to USB-C - is it connected?";
-		                			resultIcon = TrayIcon.MessageType.ERROR;
-		                		}
-		                		
-		                		break;
-		                	case "SWITCH_HDMI2":
-		                		if (restController.switchToSource(AtlonaSW510Input.HDMI2)) {
-		                			resultMessage = "Switched to DVD";
-		                			resultIcon = TrayIcon.MessageType.INFO;
-		                			message = new SourceChangedMessage(AtlonaSW510Input.HDMI2);
-		                		} else {
-		                			resultMessage = "Failed to switch to HDMI - is it connected?"; 
-		                			resultIcon = TrayIcon.MessageType.ERROR;
-		                		}
-		                		
-		                		break;
-		                	case "SWITCH_BYOD":
-		                		if (restController.switchToSource(AtlonaSW510Input.BYOD)) {
-		                			resultMessage = "Switched to Wifi Source";
-		                			resultIcon = TrayIcon.MessageType.INFO;
-		                			message = new SourceChangedMessage(AtlonaSW510Input.BYOD);
-		                		} else {
-		                			resultMessage = "Failed to switch to Wifi Source - is it connected?"; 
-		                			resultIcon = TrayIcon.MessageType.ERROR;
-		                		}
-		                		
-		                		break;
-		                	default:
-		                		resultMessage = "Switching failed, Invalid Source \"" + item.getActionCommand() + "\"";
-                	}
-                	
-                	if (message != null) MessageBroker.broadcastMessage(message);
-                	trayIcon.displayMessage("Atlona Control",resultMessage,resultIcon);
-                	
-                } catch (AtlonaSwitchingException e1) {
-                	trayIcon.displayMessage("Atlona Control",e1.getCause().toString(),TrayIcon.MessageType.ERROR);
-                	System.err.println(e1.getCause());
-                } 
+                switch (item.getActionCommand()) {
+				    	case "SWITCH_HDMI1":
+				    		if (restController.switchToSource(AtlonaSW510Input.HDMI1)) {
+				    			resultMessage = "Switched to HDMI";
+				    			resultIcon = TrayIcon.MessageType.INFO;
+				    			message = new SourceChangedMessage(AtlonaSW510Input.HDMI1);
+				    		} else {
+				    			resultMessage = "Failed to switch to HDMI - is it connected?";
+				    			resultIcon = TrayIcon.MessageType.ERROR;
+				    		}
+				    		break;
+				    		
+				    	case "SWITCH_DISPLAYPORT":
+				    		if (restController.switchToSource(AtlonaSW510Input.DISPLAYPORT)) {
+				    			resultMessage = "Switched to DisplayPort";
+				    			resultIcon = TrayIcon.MessageType.INFO;
+				    			message = new SourceChangedMessage(AtlonaSW510Input.DISPLAYPORT);
+				    		} else {
+				    			resultMessage = "Failed to switch to DisplayPort - is it connected?"; 
+				    			resultIcon = TrayIcon.MessageType.ERROR;
+				    		}
+				    		break;
+				    		
+				    	case "SWITCH_USBC":
+				    		if (restController.switchToSource(AtlonaSW510Input.USBC)) {
+				    			resultMessage = "Switched to USB-C";
+				    			resultIcon = TrayIcon.MessageType.INFO;
+				    			message = new SourceChangedMessage(AtlonaSW510Input.USBC);
+				    		} else {
+				    			resultMessage =  "Failed to switch to USB-C - is it connected?";
+				    			resultIcon = TrayIcon.MessageType.ERROR;
+				    		}
+				    		
+				    		break;
+				    	case "SWITCH_HDMI2":
+				    		if (restController.switchToSource(AtlonaSW510Input.HDMI2)) {
+				    			resultMessage = "Switched to DVD";
+				    			resultIcon = TrayIcon.MessageType.INFO;
+				    			message = new SourceChangedMessage(AtlonaSW510Input.HDMI2);
+				    		} else {
+				    			resultMessage = "Failed to switch to HDMI - is it connected?"; 
+				    			resultIcon = TrayIcon.MessageType.ERROR;
+				    		}
+				    		
+				    		break;
+				    	case "SWITCH_BYOD":
+				    		if (restController.switchToSource(AtlonaSW510Input.BYOD)) {
+				    			resultMessage = "Switched to Wifi Source";
+				    			resultIcon = TrayIcon.MessageType.INFO;
+				    			message = new SourceChangedMessage(AtlonaSW510Input.BYOD);
+				    		} else {
+				    			resultMessage = "Failed to switch to Wifi Source - is it connected?"; 
+				    			resultIcon = TrayIcon.MessageType.ERROR;
+				    		}
+				    		
+				    		break;
+				    	default:
+				    		resultMessage = "Switching failed, Invalid Source \"" + item.getActionCommand() + "\"";
+				}
+				
+				if (message != null) MessageBroker.broadcastMessage(message);
+				trayIcon.displayMessage("Atlona Control",resultMessage,resultIcon); 
             }
         };
         

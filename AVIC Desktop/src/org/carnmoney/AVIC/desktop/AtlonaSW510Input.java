@@ -7,4 +7,10 @@ public class AtlonaSW510Input {
 	public static final int HDMI2 = 3;
 	public static final int BYOD = 4;
 	
+	private static String inputNames[] =  {"USBC","DISPLAYPORT","HDMI1","HDMI2","BYOD"};
+	
+	public static String getNameFor(int inputNumber) {
+		if (inputNumber < 0 || inputNumber > 4) return "UNKNOWN";
+		return inputNames[inputNumber];
+	}
 }

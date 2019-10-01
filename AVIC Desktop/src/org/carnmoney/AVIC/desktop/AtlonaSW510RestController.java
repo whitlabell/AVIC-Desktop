@@ -15,7 +15,7 @@ public class AtlonaSW510RestController {
 		this.programSettings = programSettings;
 	}
 	
-	public boolean switchToSource(int source) throws AtlonaSwitchingException {
+	public boolean switchToSource(int source)  {
 		
     	
     	String host = programSettings.getProperty("host","192.168.3.26");
@@ -29,16 +29,11 @@ public class AtlonaSW510RestController {
 					.socketTimeout(8000)
 					.execute().returnContent().asString();
 			System.out.println(reply);
-		} catch (NullPointerException e) {
+		} catch (NullPointerException | IOException e) {
+			System.err.println("Switching Exception: " + e.getMessage());
 			return false;
-		} catch (ClientProtocolException e) {
-			throw new AtlonaSwitchingException("System NPE.",e);
+		} 
 		
-		} catch (ConnectTimeoutException e) {
-			throw new AtlonaSwitchingException("Couldn't connect to Atlona, are you on the right network?", e);
-		}  catch (IOException e) {
-			throw new AtlonaSwitchingException("Atlona connection error", e);
-		}
 		boolean rc = reply.contains("\"success\":true");
 		return rc;
 
@@ -60,13 +55,12 @@ public class AtlonaSW510RestController {
 					.connectTimeout(2000)
 					.socketTimeout(8000)
 					.execute().returnContent().asString();
-		} catch (NullPointerException e) {
+		} catch (NullPointerException | IOException e) {
+			System.err.println("Mute Exception: " + e.getMessage());
 			return false;
 		
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
+		
 		boolean rc = reply1.contains("\"success\":true") && reply2.contains("\"success\":true");
 		return rc;
 	}
@@ -84,14 +78,16 @@ public class AtlonaSW510RestController {
 					.connectTimeout(2000)
 					.socketTimeout(8000)
 					.execute().returnContent().asString();
-		} catch (ClientProtocolException e) {
-			return "";
 		} catch (IOException e) {
+			System.err.println("Exception getting temperature: " + e.getMessage());
 			return "";
 		}
-		System.out.println(reply);
-		
 		
 		return reply;
+	}
+
+	public boolean setAudioLevel(int value) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

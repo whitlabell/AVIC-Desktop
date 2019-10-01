@@ -7,11 +7,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Properties;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
@@ -19,8 +21,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 @SuppressWarnings("serial")
-public class ControlPanel extends JFrame implements ActionListener, ChangeListener, MessageListener {
-
+public class ControlPanel extends JFrame implements ActionListener, ChangeListener, MessageListener, MouseListener {
 	
 	
 	private JLabel connectionStatus = new JLabel("");
@@ -33,6 +34,9 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 	
 	private JToggleButton muteButton = null;
 	private JSlider audioLevel = null;
+	
+	private boolean audioMuted = false;
+	private int audioCurrentLevel = 0;
 
 	private AtlonaSW510RestController restController = null;
 	private Properties programSettings = null;
@@ -73,11 +77,17 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 		JPanel inputPanel = new JPanel();
 		inputPanel.setBorder(BorderFactory.createTitledBorder("Input Selection: "));
 		inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
-		hdmi1Button = new LabelledButton(programSettings.getProperty("input.labels.hdmi.1","HDMI 1"), "",this);
-		hdmi2Button = new LabelledButton(programSettings.getProperty("input.labels.hdmi.2","HDMI 2"), "",this);
+		hdmi1Button = new LabelledButton(programSettings.getProperty("input.labels.hdmi1","HDMI 1"), "",this);
+		hdmi2Button = new LabelledButton(programSettings.getProperty("input.labels.hdmi2","HDMI 2"), "",this);
 		displayportButton = new LabelledButton(programSettings.getProperty("input.labels.displayport","DisplayPort"), "",this);
 		usbcButton = new LabelledButton(programSettings.getProperty("input.labels.usbc","USB-C"), "",this);
 		byodButton = new LabelledButton(programSettings.getProperty("input.labels.byod","Wireless Source"), "",this);
+		
+		hdmi1Button.getButton().setActionCommand("SWITCH SOURCE");
+		hdmi2Button.getButton().setActionCommand("SWITCH SOURCE");
+		displayportButton.getButton().setActionCommand("SWITCH SOURCE");
+		usbcButton.getButton().setActionCommand("SWITCH SOURCE");
+		byodButton.getButton().setActionCommand("SWITCH SOURCE");
 		
 		inputPanel.add(hdmi1Button);
 		inputPanel.add(displayportButton);
@@ -93,8 +103,10 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 		muteButton = new JToggleButton("Mute");
 		muteButton.setActionCommand("MUTE");
 		muteButton.addActionListener(this);
+		
 		audioLevel = new JSlider(-80,0);
 		audioLevel.addChangeListener(this);
+		audioLevel.addMouseListener(this);
 		audioLevel.setMajorTickSpacing(10);
 		audioLevel.setPaintTicks(true);
 		audioLevel.setPaintLabels(true);
@@ -131,6 +143,7 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 	
 
 	private void populateGUI() {
+//TODO: Initialise state from device current state.
 		deviceLocation.setText(getDeviceLocation());
 		if (NetworkChecker.deviceIsReady(restController)) {
 			setConnectionStatus(true);
@@ -167,18 +180,23 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 		switch (source) {
 		case AtlonaSW510Input.HDMI1:
 			hdmi1Button.setSelected(true);
+			hdmi1Button.getButton().requestFocusInWindow();
 			break;
 		case AtlonaSW510Input.HDMI2:
 			hdmi2Button.setSelected(true);
+			hdmi2Button.getButton().requestFocusInWindow();
 			break;
 		case AtlonaSW510Input.DISPLAYPORT:
 			displayportButton.setSelected(true);
+			displayportButton.getButton().requestFocusInWindow();
 			break;
 		case AtlonaSW510Input.USBC:
 			usbcButton.setSelected(true);
+			usbcButton.getButton().requestFocusInWindow();
 			break;
 		case AtlonaSW510Input.BYOD:
 			byodButton.setSelected(true);
+			byodButton.getButton().requestFocusInWindow();
 			break;
 		default: //Should never reach here!
 			System.err.println("Unknown source [" + source + "] sent to Control Panel. Cannot update GUI.");
@@ -205,18 +223,22 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		
 		switch (e.getActionCommand()) {
 		case "MUTE":
-			if (muteButton.isSelected()) {
+			
+			if (audioMuted) {
 				if (restController.setMute(false)) {
 					muteButton.setSelected(false);
 					MessageBroker.broadcastMessage(new Message(MessageType.AUDIO_UNMUTED, "Audio Unmuted"));
+					audioMuted = false;
 				}
 				
 			} else {
 				if (restController.setMute(true)) {
 					muteButton.setSelected(true);
 					MessageBroker.broadcastMessage(new Message(MessageType.AUDIO_MUTED, "Audio Muted"));
+					audioMuted = true;
 				}
 			}
 			break;
@@ -227,16 +249,45 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 		case "CLOSE":
 			this.setVisible(false);
 			break;
-		
+		case "SWITCH SOURCE":
+			int source = -1;
+			if (e.getSource() == hdmi1Button.getButton()) source = AtlonaSW510Input.HDMI1;
+			if (e.getSource() == hdmi2Button.getButton()) source = AtlonaSW510Input.HDMI2;
+			if (e.getSource() == displayportButton.getButton()) source = AtlonaSW510Input.DISPLAYPORT;
+			if (e.getSource() == usbcButton.getButton()) source = AtlonaSW510Input.USBC;
+			if (e.getSource() == byodButton.getButton()) source = AtlonaSW510Input.BYOD;
+			
+			if (source == -1) break;
+			
+			if (restController.switchToSource(source)) {
+				selectButtonForSource(source);
+				MessageBroker.broadcastMessage(new SourceChangedMessage(source));
+			} else {
+				((JToggleButton) e.getSource()).setSelected(false);
+				restoreFocusToSelectedButton();
+				String propertiesKey = "input.labels." + AtlonaSW510Input.getNameFor(source).toLowerCase();
+				JOptionPane.showMessageDialog(null,  "Failed to switch input source to " + 
+						programSettings.getProperty(propertiesKey,"Input " + Integer.toString(source)),
+						programSettings.getProperty("app.name","AVIC Desktop"),
+						JOptionPane.ERROR_MESSAGE);
+			}
+			
 		}
 			
 			
 		
 	}
 
+	private void restoreFocusToSelectedButton() {
+		if (hdmi1Button.getButton().isSelected()) hdmi1Button.getButton().requestFocusInWindow();
+		if (hdmi2Button.getButton().isSelected()) hdmi2Button.getButton().requestFocusInWindow();
+		if (displayportButton.getButton().isSelected()) displayportButton.getButton().requestFocusInWindow();
+		if (byodButton.getButton().isSelected()) byodButton.getButton().requestFocusInWindow();
+		if (usbcButton.getButton().isSelected()) usbcButton.getButton().requestFocusInWindow();
+	}
+
 	@Override
-	public void stateChanged(ChangeEvent e) {
-		// TODO Auto-generated method stub
+	public void stateChanged(ChangeEvent e) {	
 		
 	}
 
@@ -266,6 +317,43 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 				//ignore
 				break;
 		}
+		
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		if (e.getComponent() == audioLevel) {
+			audioCurrentLevel = audioLevel.getValue();
+		}
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		if (restController.setAudioLevel(audioLevel.getValue())) {
+			audioCurrentLevel = audioLevel.getValue();
+		} else {
+			//reset slider to old value since the level change failed.
+			audioLevel.setValue(audioCurrentLevel);
+		}
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
 		
 	}
 	

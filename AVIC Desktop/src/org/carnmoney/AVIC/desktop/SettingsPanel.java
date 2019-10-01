@@ -52,8 +52,8 @@ public class SettingsPanel extends JFrame implements ActionListener{
 		networkPort.setValue(settings.getProperty("port","80"));
 		appName.setValue(settings.getProperty("app.name","AtlonaControl"));
 		logoPath.setValue(settings.getProperty("app.logo","cclogo.png"));
-		hdmi1Label.setValue(settings.getProperty("input.labels.hdmi.1","HDMI"));
-		hdmi2Label.setValue(settings.getProperty("input.labels.hdmi.2","HDMI 2"));
+		hdmi1Label.setValue(settings.getProperty("input.labels.hdmi1","HDMI"));
+		hdmi2Label.setValue(settings.getProperty("input.labels.hdmi2","HDMI 2"));
 		usbcLabel.setValue(settings.getProperty("input.labels.usbc", "USB-C"));
 		byodLabel.setValue(settings.getProperty("input.labels.byod","Wireless source"));
 		displayPortLabel.setValue(settings.getProperty("input.labels.displayport","DisplayPort"));
@@ -64,8 +64,8 @@ public class SettingsPanel extends JFrame implements ActionListener{
 		settings.setProperty("port", networkPort.getValueAsString());
 		settings.setProperty("app.name", appName.getValueAsString());
 		settings.setProperty("app.logo", logoPath.getValueAsString());
-		settings.setProperty("input.labels.hdmi.1", hdmi1Label.getValueAsString());
-		settings.setProperty("input.labels.hdmi.2", hdmi2Label.getValueAsString());
+		settings.setProperty("input.labels.hdmi1", hdmi1Label.getValueAsString());
+		settings.setProperty("input.labels.hdmi2", hdmi2Label.getValueAsString());
 		settings.setProperty("input.labels.usbc", usbcLabel.getValueAsString());
 		settings.setProperty("input.labels.byod", byodLabel.getValueAsString());
 		settings.setProperty("input.labels.displayport", displayPortLabel.getValueAsString());
