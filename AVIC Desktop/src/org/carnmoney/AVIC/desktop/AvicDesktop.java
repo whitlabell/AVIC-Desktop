@@ -41,6 +41,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.conn.ConnectTimeoutException;
 
+import com.apple.eawt.AppEvent.AboutEvent;
+
 
 
 
@@ -51,11 +53,25 @@ public class AvicDesktop implements MessageListener {
 	private static Menu displayMenu = null;
 	
 	private static AtlonaSW510RestController restController = new AtlonaSW510RestController(programSettings);
-	private static MessageBroker messageBroker = new MessageBroker();
 	private static ControlPanel panel = null;
 	private static SettingsPanel settingsPanel = null;
 	
-    public static void main(String[] args) {
+	private static AvicDesktop singleton = null;
+    
+	public AvicDesktop() {
+		
+		SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                createAndShowGUI();
+                settingsPanel = new SettingsPanel(programSettings,programSettingsFile,restController);
+                panel = new ControlPanel(programSettings,restController);
+                     
+            }
+        });
+		
+	}
+	
+	public static void main(String[] args) {
         
         try {
             
@@ -88,18 +104,10 @@ public class AvicDesktop implements MessageListener {
 			
 		} 
         
-        //Schedule a job for the event-dispatching thread:
-        //adding TrayIcon.
+        singleton = new AvicDesktop();
+    
+        MessageBroker.addClient(singleton);        
         
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-                if (! NetworkChecker.addressIsReachable(programSettings.getProperty("host"),5000)) {
-                	
-                }
-                
-            }
-        });
         
        
         
@@ -107,15 +115,20 @@ public class AvicDesktop implements MessageListener {
 
 
 	private static void createAndShowGUI() {
+		
+		
         //Check the SystemTray support
         if (!SystemTray.isSupported()) {
             System.out.println("SystemTray is not supported");
             return;
         }
         final PopupMenu popup = new PopupMenu();
-        final TrayIcon trayIcon = new TrayIcon(createImage(programSettings.getProperty("app.logo"), "Program logo"));
+        final Image iconImage = createImage(programSettings.getProperty("app.logo"), "Program logo");
+        final TrayIcon trayIcon = new TrayIcon(iconImage);
         trayIcon.setImageAutoSize(true);
         final SystemTray tray = SystemTray.getSystemTray();
+        
+        performMacIntegration(iconImage);
         
         // Create a popup menu components
         MenuItem aboutItem = new MenuItem(programSettings.getProperty("app.name","Atlona Control"));
@@ -287,7 +300,7 @@ public class AvicDesktop implements MessageListener {
 	//Obtain the image URL
     protected static Image createImage(String path, String description) {
     	
-    	URL defaultImage = AvicDesktop.class.getResource("/cclogo.png");
+    	URL defaultImage = AvicDesktop.class.getResource("/cclogo2.png");
     	URL imageURL = null;
     	try {
     		File f = new File(path);
@@ -304,7 +317,25 @@ public class AvicDesktop implements MessageListener {
     	return (new ImageIcon(imageURL, description)).getImage();
     }
 
+    @SuppressWarnings("restriction")
+	protected static void performMacIntegration(Image icon) {
+    	try {
+    		Class.forName( "com.apple.eawt.Application", false, null );
+    		// If we get here, we're on a Mac and we can set the doc icon.
+    		com.apple.eawt.Application.getApplication().setDockIconImage(icon);
+    		com.apple.eawt.AboutHandler handler = new com.apple.eawt.AboutHandler() {
 
+				@Override
+				public void handleAbout(AboutEvent evt) {
+					JOptionPane.showMessageDialog(null,"AVIC Desktop Switch Controller v1.0\nWritten by\n The Tech Services Team, Carnmoney Church.");
+					
+				}};
+    		com.apple.eawt.Application.getApplication().setAboutHandler(handler);
+
+    	} catch (ClassNotFoundException cnf) {
+    		System.out.println("Note: Not a Mac, so can't set dock icon.");
+    	}
+    }
 	
 	@Override
 	public void receiveMessage(Message msg) {

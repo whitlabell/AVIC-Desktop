@@ -1,6 +1,7 @@
 package org.carnmoney.AVIC.desktop;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -77,11 +78,11 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 		JPanel inputPanel = new JPanel();
 		inputPanel.setBorder(BorderFactory.createTitledBorder("Input Selection: "));
 		inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
-		hdmi1Button = new LabelledButton(programSettings.getProperty("input.labels.hdmi1","HDMI 1"), "",this);
-		hdmi2Button = new LabelledButton(programSettings.getProperty("input.labels.hdmi2","HDMI 2"), "",this);
-		displayportButton = new LabelledButton(programSettings.getProperty("input.labels.displayport","DisplayPort"), "",this);
-		usbcButton = new LabelledButton(programSettings.getProperty("input.labels.usbc","USB-C"), "",this);
-		byodButton = new LabelledButton(programSettings.getProperty("input.labels.byod","Wireless Source"), "",this);
+		hdmi1Button = new LabelledButton("HDMI 1", "",this);
+		hdmi2Button = new LabelledButton("HDMI 2", "",this);
+		displayportButton = new LabelledButton("DisplayPort", "",this);
+		usbcButton = new LabelledButton("USB-C", "",this);
+		byodButton = new LabelledButton("Wireless Source", "",this);
 		
 		hdmi1Button.getButton().setActionCommand("SWITCH SOURCE");
 		hdmi2Button.getButton().setActionCommand("SWITCH SOURCE");
@@ -145,6 +146,12 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 	private void populateGUI() {
 //TODO: Initialise state from device current state.
 		deviceLocation.setText(getDeviceLocation());
+		hdmi1Button.getButton().setText(programSettings.getProperty("input.labels.hdmi1","HDMI 1"));
+		hdmi2Button.getButton().setText(programSettings.getProperty("input.labels.hdmi2","HDMI 2"));
+		displayportButton.getButton().setText(programSettings.getProperty("input.labels.displayport","DisplayPort"));
+		usbcButton.getButton().setText(programSettings.getProperty("input.labels.usbc","USB-C"));
+		byodButton.getButton().setText(programSettings.getProperty("input.labels.byod","Wireless Source"));
+		
 		if (NetworkChecker.deviceIsReady(restController)) {
 			setConnectionStatus(true);
 			enableButtons(true);
@@ -152,7 +159,7 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 			setConnectionStatus(false);
 			enableButtons(false);
 		}
-		
+		//TODO: populate and change the logo
 	}
 	
 	private void enableButtons(boolean state) {
@@ -206,13 +213,15 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 	private void setConnectionStatus(boolean connected) {
 		
 		if (connected) {
-			connectionStatus.setBackground(Color.GREEN);
+			connectionStatus.setBackground(Color.BLUE);
 			connectionStatus.setForeground(Color.WHITE);
-			connectionStatus.setText("Connected");
+			connectionStatus.setText(" Connected ");
+			connectionStatus.setFont(connectionStatus.getFont().deriveFont(Font.BOLD));
 		} else {
 			connectionStatus.setBackground(Color.RED);
 			connectionStatus.setForeground(Color.WHITE);
-			connectionStatus.setText("Not Connected!");
+			connectionStatus.setText(" Not Connected! ");
+			connectionStatus.setFont(connectionStatus.getFont().deriveFont(Font.BOLD));
 		}
 		
 	}
@@ -322,7 +331,12 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
+		if (setAudioLevel(audioLevel.getValue())) {
+			audioCurrentLevel = audioLevel.getValue();
+		} else {
+			//reset slider to old value since the level change failed.
+			audioLevel.setValue(audioCurrentLevel);
+		}
 		
 	}
 
@@ -336,7 +350,8 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		if (restController.setAudioLevel(audioLevel.getValue())) {
+		
+		if (setAudioLevel(audioLevel.getValue())) {
 			audioCurrentLevel = audioLevel.getValue();
 		} else {
 			//reset slider to old value since the level change failed.
@@ -355,6 +370,12 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 	public void mouseExited(MouseEvent e) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private boolean setAudioLevel(int dbLevel) {
+		boolean analogueSucceeded = restController.setAudioLevel(AtlonaSW510Output.AUDIO_ANALOG, audioLevel.getValue());
+		boolean hdmiSucceeded = restController.setAudioLevel(AtlonaSW510Output.AUDIO_HDMI, audioLevel.getValue());
+		return analogueSucceeded && hdmiSucceeded;
 	}
 	
 }

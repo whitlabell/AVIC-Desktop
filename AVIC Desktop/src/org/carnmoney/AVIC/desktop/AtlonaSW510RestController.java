@@ -86,8 +86,17 @@ public class AtlonaSW510RestController {
 		return reply;
 	}
 
-	public boolean setAudioLevel(int value) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean setAudioLevel(String audioSourceName, int dBvalue) {
+		String restURL = AtlonaSW510RestProtocol.setAudioLevel(programSettings.getProperty("host"), programSettings.getProperty("port"), 
+																audioSourceName, dBvalue);
+		String reply = "";
+		try {
+			reply = Request.Get(restURL).connectTimeout(2000).socketTimeout(8000).execute().returnContent().asString();
+		} catch (IOException ioe) {
+			System.err.println("Failed to set the " + audioSourceName + " audio level: " + ioe.getMessage());
+			return false;
+		}
+		
+		return reply.contains("\"success\":true");
 	}
 }
