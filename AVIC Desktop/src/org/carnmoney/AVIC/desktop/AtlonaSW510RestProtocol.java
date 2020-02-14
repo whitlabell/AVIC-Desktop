@@ -19,6 +19,6 @@ public class AtlonaSW510RestProtocol {
 	}
 	
 	public static String setAudioLevel(String address, String port, String audioOutput, int newAudioLevel) {
-		return "http://" + address + ":" + port + "/API?method=Audio:Level:Set&" + audioOutput + "=" + Integer.toString(newAudioLevel);
+		return "http://" + address + ":" + port + "/API?method=Audio:Volume:Set&volume=" + Integer.toString(newAudioLevel);
 	}
 }

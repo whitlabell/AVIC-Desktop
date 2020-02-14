@@ -373,8 +373,8 @@ public class ControlPanel extends JFrame implements ActionListener, ChangeListen
 	}
 	
 	private boolean setAudioLevel(int dbLevel) {
-		boolean analogueSucceeded = restController.setAudioLevel(AtlonaSW510Output.AUDIO_ANALOG, audioLevel.getValue());
-		boolean hdmiSucceeded = restController.setAudioLevel(AtlonaSW510Output.AUDIO_HDMI, audioLevel.getValue());
+		boolean analogueSucceeded = restController.setAudioLevel(AtlonaSW510Output.AUDIO_ANALOG, dbLevel);
+		boolean hdmiSucceeded = restController.setAudioLevel(AtlonaSW510Output.AUDIO_HDMI, dbLevel);
 		return analogueSucceeded && hdmiSucceeded;
 	}
 	

@@ -84,8 +84,8 @@ public class SettingsPanel extends JFrame implements ActionListener{
 		networkPort = new NameValueField("Port: ", 5);
 		appName = new NameValueField("App Name: ", 15);
 		logoPath = new NameValueField("Logo Icon: ", 15);
-		hdmi1Label = new NameValueField("HDMI 1 :", 10);
-		hdmi2Label = new NameValueField("HDMI 2 :", 10);
+		hdmi1Label = new NameValueField("HDMI 3 :", 10);
+		hdmi2Label = new NameValueField("HDMI 4 :", 10);
 		usbcLabel = new NameValueField("USB-C: ", 10);
 		displayPortLabel = new NameValueField("DisplayPort: ", 10);
 		byodLabel = new NameValueField("BYOD: ", 10);

@@ -47,6 +47,8 @@ import com.apple.eawt.AppEvent.AboutEvent;
 
 
 public class AvicDesktop implements MessageListener {
+	
+	private static final String APP_VERSION = "2020-2";
 
 	private static Properties programSettings = new Properties();
 	private static File programSettingsFile =  new File(System.getProperty("user.home"),"AVIC.properties");
@@ -178,14 +180,12 @@ public class AvicDesktop implements MessageListener {
         
         trayIcon.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(null,
-                        "AVIC Desktop Switch Controller v1.0\nWritten by\n The Tech Services Team, Carnmoney Church.");
+                JOptionPane.showMessageDialog(null,getAboutMessage());
             }
         });
         
         aboutItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //trayIcon.displayMessage("About","AVIC Desktop Switch Controller v1.0\nWritten by\n The Tech Services Team, Carnmoney Church.", TrayIcon.MessageType.INFO);
             	if (panel == null) panel = new ControlPanel(programSettings,restController);
             	panel.setVisible(true);
             }
@@ -327,7 +327,7 @@ public class AvicDesktop implements MessageListener {
 
 				@Override
 				public void handleAbout(AboutEvent evt) {
-					JOptionPane.showMessageDialog(null,"AVIC Desktop Switch Controller v1.0\nWritten by\n The Tech Services Team, Carnmoney Church.");
+					JOptionPane.showMessageDialog(null,AvicDesktop.getAboutMessage());
 					
 				}};
     		com.apple.eawt.Application.getApplication().setAboutHandler(handler);
@@ -337,6 +337,11 @@ public class AvicDesktop implements MessageListener {
     	}
     }
 	
+	protected static final String getAboutMessage() {
+		
+		return "AVIC Desktop Switch Controller v" + APP_VERSION + "\nWritten by\n The Tech Services Team, Carnmoney Church.";
+	}
+
 	@Override
 	public void receiveMessage(Message msg) {
 		
